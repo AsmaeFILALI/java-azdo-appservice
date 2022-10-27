@@ -1,0 +1,107 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: build
+  jobs:
+  - job: build
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        mavenOptions: '-Xmx3072m'
+        javaHomeOption: 'JDKVersion'
+        codeCoverageToolOption: 'jaCoCo'
+        jdkVersionOption: '11'
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        goals: 'clean package'
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files to artifact staging directory'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: |
+          **/target/*.?(war|jar)
+          **/newman/*.json
+          **/jmetter/*
+          **/cucumber-reports/*
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/cucumber-reports/*.xml'
+        testRunTitle: 'Acceptance-Tests'
+
+    - task: MicrosoftSecurityDevOps@1
+      displayName: 'Microsoft security for devops'
+- stage: Dev
+  jobs:
+    - job: deployDev
+      steps:
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          buildType: 'current'
+          downloadType: 'single'
+          artifactName: 'drop'
+          downloadPath: '$(System.ArtifactsDirectory)'
+
+      - task: AzureRmWebAppDeployment@4
+        inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: '<service connection name>'
+          appType: 'webAppLinux'
+          WebAppName: '<dev app service name>'
+          packageForLinux: '$(System.ArtifactsDirectory)/drop/target/books-service-0.0.1-SNAPSHOT.jar'
+          RuntimeStack: 'JAVA|11-java11'
+    - job: Api_test_newman
+      dependsOn: deployDev
+      steps:
+      - task: CmdLine@2
+        inputs:
+          script: |
+            npm install -g newman  --loglevel=error
+            newman run booksTest.postman_collection.json  --env-var url=https://<dev app service name>.azurewebsites.net
+          workingDirectory: '$(System.DefaultWorkingDirectory)/newman'
+- stage: QA
+  jobs:
+    - deployment: DeployQA
+      environment: 'QA'
+      strategy:
+       runOnce:
+         deploy:  
+          steps:
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+          - task: AzureRmWebAppDeployment@4
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: '<service connection name>'
+              appType: 'webAppLinux'
+              WebAppName: '<qa service name>'
+              packageForLinux: '$(System.ArtifactsDirectory)/drop/target/books-service-0.0.1-SNAPSHOT.jar'
+              RuntimeStack: 'JAVA|11-java11'
+    - job: LoadTesting
+      dependsOn: DeployQA
+      steps:    
+      - task: AzureLoadTest@1
+        inputs:
+          azureSubscription: '<service connection name>'
+          loadTestConfigFile: '$(System.DefaultWorkingDirectory)/jmetter/jmeter.yaml'
+          resourceGroup: '<load test resource group>'
+          loadTestResource: '<load test resource>'
+

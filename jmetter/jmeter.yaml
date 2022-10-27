@@ -1,0 +1,8 @@
+version: v0.1
+testName: LoadTest
+testPlan: jmetterTest.jmx
+description: Load test Books service
+engineInstances: 1
+failureCriteria:
+  - avg(response_time_ms) > 300
+  - percentage(error) > 0
