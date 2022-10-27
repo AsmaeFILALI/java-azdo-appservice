@@ -1,6 +1,6 @@
 # Java on Azure Devops 
 This repository presents an example of a java project on azure devops by highlighting the build, automated tests and deployment aspects.
-The within an azure devops pipeline the application booksService is deployed to 2 different environement Dev & QA Azure app services with automated tests for each step
+Within an azure devops pipeline, the application booksService is deployed to 2 different environement Dev & QA Azure app services with automated tests for each step
 ## Prerequisites
   - Azure Subscription
   - Azure Devops Organisation
