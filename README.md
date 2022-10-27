@@ -5,6 +5,7 @@ The within an azure devops pipeline the application booksService is deployed to 
   - Azure Subscription
   - Azure Devops Organisation
   - [Azure resource Manager service connextion](https://azuredevopslabs.com/labs/devopsserver/azureserviceprincipal)
+  - 2 Azure app service provisionned one for dev and one for Qa environement
 
 ## The Java Microservice:
   - Books service with 2 endpoints:
