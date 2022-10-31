@@ -45,6 +45,9 @@ stages:
 
     - task: MicrosoftSecurityDevOps@1
       displayName: 'Microsoft security for devops'
+      inputs:
+        categories: 'code'
+  
 - stage: Dev
   jobs:
     - job: deployDev
