@@ -1,0 +1,37 @@
+trigger: none
+
+pool:
+  vmImage: ubuntu-latest
+variables:
+  - name: location
+    value: 'canadacentral' 
+parameters:
+  - name: subID
+    values:
+    - <subscription id>
+    type: string
+  - name: ServicePrincipal
+    type: string
+    values:
+    - <service connection name>
+
+steps:
+
+- task: AzureCLI@2
+  displayName: Deploy into ${{ parameters.subID }}
+  inputs:
+    azureSubscription: ${{parameters.ServicePrincipal}}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "Deploying using ${{ parameters.subID }}.json..."
+      TEMPLATE='infra/landingzone/main.bicep'
+
+      az deployment sub create \
+          --subscription ${{ parameters.subID}} \
+          --name deploy-test-webapps-${{ parameters.subID}} \
+          --location ${{ variables.location }}\
+          --template-file $TEMPLATE \
+          --parameters @./infra/properties/webappsIAC.json
+
+

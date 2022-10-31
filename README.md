@@ -5,7 +5,6 @@ Within an azure devops pipeline, the application booksService is deployed to 2 d
   - Azure Subscription
   - Azure Devops Organisation
   - [Azure resource Manager service connextion](https://azuredevopslabs.com/labs/devopsserver/azureserviceprincipal)
-  - 2 Azure app service provisionned one for dev and one for Qa environement
 
 ## The Java Microservice:
   - Books service with 2 endpoints:
@@ -155,3 +154,11 @@ The jUnit test are run during the maven package task
 - The code Analysis results are published with every build as following <br>
 
   ![code Analysis](img/codeAnalysis.png)
+
+## Infrastructure Provisionning
+
+The infrastrucure is provisionned via the deploy-infra pipeline, which execute a bicep to provision 2 app services.
+To execute the pipeline in your environment, you need just to :
+- Replace the placeholders for your service connection, subscriptionID in the file ci/deploy-infra.yml
+- Replace app service names for QA and dev in the file infra/properties/webappsIAC.json
+- Create a new pipeline using the existing yml file file ci/deploy-infra.yml

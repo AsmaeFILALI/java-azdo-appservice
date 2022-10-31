@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "canadacentral"
+        },
+        "resourceGroupName": {
+            "value": "rg-test-webapps"
+        },
+        "webapps": {
+            "value": [
+                {
+                    "sku": {
+                        "name": "S1"
+                    },
+                    "name": "<dev app service name>",
+                    "appServicePlanName": "appServicePlan-dev"
+                },
+                {
+                    "sku": {
+                        "name": "S1"
+                    },
+                    "name": "<qa app service name>",
+                    "appServicePlanName": "appServicePlan-qa"
+                }
+            ]
+        }
+    }
+}
